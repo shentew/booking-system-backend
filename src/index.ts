@@ -2,24 +2,31 @@ import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { prisma } from './lib/prisma';
-import authRoutes from './routes/auth.routes';
-import appointmentRoutes from './routes/appointment.routes'; // <--- IMPORTANTE
+import authRoutes from './routes/auth.routes'; // <--- Importado
+import appointmentRoutes from './routes/appointment.routes';
 
 dotenv.config();
 
 const app: Application = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001; // Aseguramos el puerto 3001
 
-app.use(cors());
+// 1. Middlewares (CORS configurado para tu frontend y JSON)
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+}));
 app.use(express.json());
 
-// 1. Rutas de Autenticación
-app.use('/api/v1/auth', authRoutes);
+// 2. Rutas de Autenticación (¡ESTA ERA LA QUE FALTABA!)
+app.use(cors({
+  origin: '*', // Permitir peticiones desde cualquier origen (Vercel, localhost, etc.)
+  credentials: true,
+}));
 
-// 2. Rutas de Citas (Protegidas por middleware)
-app.use('/api/v1/appointments', appointmentRoutes); // <--- IMPORTANTE
+// 3. Rutas de Citas
+app.use('/api/v1/appointments', appointmentRoutes);
 
-// 3. Ruta auxiliar para obtener servicios (Necesaria para la prueba)
+// 4. Ruta auxiliar para obtener servicios
 app.get('/api/v1/services', async (req: Request, res: Response) => {
     try {
         const services = await prisma.service.findMany({
@@ -32,12 +39,29 @@ app.get('/api/v1/services', async (req: Request, res: Response) => {
     }
 });
 
-// 4. Ruta de prueba de salud del servidor
+// 5. Ruta de prueba de salud del servidor
 app.get('/api/v1/health', (req: Request, res: Response) => {
     res.status(200).json({
         success: true,
         message: 'El servidor del Sistema de Reservas está funcionando correctamente.',
     });
+});
+
+// RUTA TEMPORAL: Asignar horario de trabajo (Solo para pruebas)
+app.post('/api/v1/seed-hours', async (req: Request, res: Response) => {
+    try {
+        await prisma.workingHour.create({
+            data: {
+                userId: "272ae0d8-b9df-4595-a14e-e74effa4ef16", // Tu ID
+                dayOfWeek: req.body.dayOfWeek,
+                startTime: "09:00:00",
+                endTime: "18:00:00"
+            }
+        });
+        res.status(200).json({ success: true, message: 'Horario creado' });
+    } catch (error: any) {
+        res.status(400).json({ success: false, message: error.message });
+    }
 });
 
 app.listen(PORT, () => {

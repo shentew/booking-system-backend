@@ -21,5 +21,5 @@ API RESTful robusta y escalable para la gestión de reservas de servicios. Desar
 
 1. Clonar el repositorio:
    ```bash
-   git clone <TU_URL_DE_GITHUB_AQUI>
+   git clone https://github.com/shentew/booking-system-backend
    cd booking-system-backend
