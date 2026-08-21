@@ -1,7 +1,7 @@
 {
   "name": "booking-system-backend",
   "version": "1.0.0",
-  "types": "module",
+  
   "description": "",
   "main": "index.js",
   "scripts": {
